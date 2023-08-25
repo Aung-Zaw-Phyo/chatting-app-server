@@ -1,34 +1,67 @@
 const express = require('express')
+const mongoose = require('mongoose')
+const cookieParser = require('cookie-parser')
+const fileUpload = require('express-fileupload')
+const cors = require('cors')
+const path = require('path')
 const app = express()
-const http = require('http')
-const server = http.createServer(app)
-const socketIo = require("socket.io")
 const PORT = 5000
 
-const io = socketIo(server, {
-    cors: {
-        origin: "http://localhost:3000"
-    }
-}) //in case server and client run on different urls
+const chat_auth_route = require('./routes/chat/auth_route')
+const chat_private_route = require('./routes/chat/private_route')
+const chat_group_route = require('./routes/chat/group_route')
 
-io.on("connection", (socket) => {
-    console.log("client connected: ", socket.id)
+const corsOptions = {
+    origin: ['http://localhost:3000', 'http://localhost:3001'], 
+    methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'HEAD', 'OPTIONS'],
+    allowedHeaders: ['Content-Type', 'Origin', 'X-Requested-With', 'Accept', 'x-client-key', 'x-client-token', 'x-client-secret', 'Authorization'],
+    credentials:true,            //access-control-allow-credentials:true
+    optionSuccessStatus:200,
+}
 
-    socket.join("clock-room")
+app.use(cors(corsOptions))
 
-    socket.on("disconnect", (reason) => {
-        console.log(reason)
+app.use(cookieParser()) 
+app.use(fileUpload());
+app.use(express.json());
+const uploadedFiles = express.static(path.join(__dirname, "uploads"));
+app.use("/uploads", uploadedFiles);
+
+
+app.use('/chat', chat_auth_route)
+app.use('/chat/private', chat_private_route)
+app.use('/chat/group', chat_group_route)
+
+
+     
+app.use((error, req, res, next) => {
+    console.log(error)
+    const status = error.statusCode || 500;
+    const message = error.message      
+    const data = error.data
+    res.status(status).json({
+        status: false,
+        message: message,
+        data: {error: data}
     })
 })
 
-setInterval(() => {
-    io.to("clock-room").emit("time", new Date())
-}, 1000)
+mongoose.connect('mongodb://127.0.0.1:27017/projects').then(result => {
+    const server = app.listen(PORT, () => {
+        console.log('Server is running on port: ', PORT)
+    })
 
-app.get('/', (req, res, next) => {
-    res.send('Hello')
+    const io = require('./socket').init(server)
+    io.on('connection', socket => {
+        console.log('Client connected!')
+        socket.on('join-room', (roomId) => {
+            console.log('private room_id : ', roomId)
+            socket.join(roomId)
+        })
+        socket.on('disconnect', () => console.log('Client disconnected!'))
+    })
+
+}).catch(error => {
+    console.log('DB connection error: ', error)
 })
 
-server.listen(PORT, () => {
-    console.log('Server is running on port: ', PORT)
-})
