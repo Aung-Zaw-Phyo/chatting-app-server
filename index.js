@@ -10,6 +10,7 @@ const PORT = 5000
 const chat_auth_route = require('./routes/chat/auth_route')
 const chat_private_route = require('./routes/chat/private_route')
 const chat_group_route = require('./routes/chat/group_route')
+const chat_admin_route = require('./routes/chat/admin_route')
 
 const corsOptions = {
     origin: ['http://localhost:3000', 'http://localhost:3001'], 
@@ -31,6 +32,7 @@ app.use("/uploads", uploadedFiles);
 app.use('/chat', chat_auth_route)
 app.use('/chat/private', chat_private_route)
 app.use('/chat/group', chat_group_route)
+app.use('/chat/admin', chat_admin_route)
 
 
      

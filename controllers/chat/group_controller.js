@@ -11,7 +11,7 @@ exports.getGroups = async(req, res, next) => {
         const userId = req.userId
         let groups = await Group.find({ 
             $or: [{creator: userId}, {members: userId}]     
-        })
+        }).populate(['creator', 'members'])
 
         res.status(201).json({message: 'Successfully fetched users.', data: {groups: groups}})
     } catch (error) {
@@ -29,7 +29,7 @@ exports.searchGroup = async (req, res, next) => {
                 { name: { $regex: search, $options: 'i' }, creator: userId },
                 { name: { $regex: search, $options: 'i' }, members: userId },
             ]
-        })
+        }).populate(['creator', 'members'])
         res.status(200).json({status: true, message: 'Successfully fetched groups', data: {groups}})
     } catch (error) {
         next(error)
@@ -110,6 +110,13 @@ exports.getGroupMessages = async(req, res, next) => {
         const group_id = req.params.id
         const userId = req.userId
 
+        const group = await Group.findById(group_id).populate(['creator', 'members'])
+        if(!group) {
+            const error = new Error('Chat not found!')
+            error.statusCode = 404
+            throw error
+        }
+
         const totalItems = await GroupMessage.find({ 
             group: group_id     
         }).countDocuments()
@@ -118,8 +125,9 @@ exports.getGroupMessages = async(req, res, next) => {
         }).sort({createdAt: -1}).populate([
             'group', 'user'
         ])
+
         const messages = result.reverse()
-        const group = await Group.findById(group_id)
+        
         res.status(200).json({status: true, message: 'Successfully fetched messages', data: {messages: messages, totalItems: totalItems, group: group, status: 'group'}})
     } catch (error) {
         next(error)
@@ -176,4 +184,33 @@ exports.createGroupMessage = async (req, res, next) => {
     } catch (error) {
         next(error)
     }
+}
+
+exports.deleteGroup = async (req, res, next) => {
+    try{
+        const userId = req.userId
+        const group_id = req.params.id
+
+        const group = await Group.findById(group_id)
+
+        console.log(userId, group.creator)
+        if(!group) {
+            const error = new Error('Group not found!')
+            error.statusCode = 404
+            throw error
+        }
+
+        if(userId.toString() !== group.creator.toString()) {
+            const error = new Error('Unauthorized!')
+            error.statusCode = 403
+            throw error
+        }
+
+        await GroupMessage.deleteMany({group: group.id})
+        await group.deleteOne()
+
+        res.status(200).json({status: true, message: 'Successfully deleted group', data: null})
+    } catch (error) {
+        next(error)
+    }  
 }

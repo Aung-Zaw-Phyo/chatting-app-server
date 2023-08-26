@@ -11,7 +11,6 @@ router.get('/', isAuth, group_controller.getGroups)
 
 router.get('/:search', isAuth, group_controller.searchGroup )
 
-
 // get group's messages
 router.get('/messages/:id', validator.validateMongoId, isAuth, group_controller.getGroupMessages)
 
@@ -36,5 +35,7 @@ router.post('/search/member', isAuth, [
         })
     }).normalizeEmail(),
 ], group_controller.searchMember)
+
+router.delete('/delete/:id', isAuth, validator.validateMongoId, group_controller.deleteGroup)
 
 module.exports = router

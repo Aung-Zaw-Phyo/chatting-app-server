@@ -166,6 +166,8 @@ exports.deleteAccount = async (req, res, next) => {
             await Group.findByIdAndUpdate(group.id, {members: updateMembers})
         })
 
+        await User.findByIdAndDelete(userId)
+
         res.cookie('jwt', '', {maxAge: 1})
         res.status(200).json({status: true, message: 'Successfully deleted account', data: null})
     } catch (error) {
@@ -180,8 +182,7 @@ exports.userList = async (req, res, next) => { // 'https://ui-avatars.com/api/?b
         let user = await User.findOne({_id: userId})
         let groups = await Group.find({ 
             $or: [{creator: userId}, {members: userId}]     
-        })
-
+        }).populate(['creator', 'members'])
         res.status(201).json({message: 'Successfully fetched users.', data: {users: users, user: user, groups: groups}})
     } catch (error) {
         next(error)

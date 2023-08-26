@@ -28,7 +28,7 @@ exports.getMessages = async(req, res, next) => {
         const messages = result.reverse()
         const user = await User.findOne({_id: to_id})
         if(!user) {
-            const error = new Error('Not Found!')
+            const error = new Error('Chat not found!')
             error.statusCode = 404
             throw error
         }
