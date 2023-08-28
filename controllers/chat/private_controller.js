@@ -2,6 +2,7 @@ const uuid = require('uuid')
 const PrivateMessage = require('../../modals/chat/private_message')
 const User = require('../../modals/chat/user')
 const { getIo } = require('../../socket')
+const {isValidObjectId} = require('mongoose')
 
 exports.getMessages = async(req, res, next) => {
     try {
@@ -83,3 +84,20 @@ exports.createMessage = async (req, res, next) => {
     }
 }
 
+exports.deleteMessage = async (req, res, next) => {
+    try {
+        const userId = req.userId
+        const message_id = req.params.id;
+        const message = await PrivateMessage.findOne({_id: message_id, from: userId})
+        if(!message) {
+            const error = new Error('Unauthorized')
+            error.statusCode = 403
+            throw error
+        }
+        message.deleteOne()
+        getIo().to(message.to.toString()).emit('delete-msg', {message: message, type: 'PRIVATE'})
+        res.status(200).json({status: true, message: 'Successfully deleted message', data: {message: message}})
+    } catch (error) {
+        next(error)
+    }
+}

@@ -183,7 +183,7 @@ exports.userList = async (req, res, next) => { // 'https://ui-avatars.com/api/?b
         let groups = await Group.find({ 
             $or: [{creator: userId}, {members: userId}]     
         }).populate(['creator', 'members'])
-        res.status(201).json({message: 'Successfully fetched users.', data: {users: users, user: user, groups: groups}})
+        res.status(201).json({status: true, message: 'Successfully fetched users.', data: {users: users, user: user, groups: groups}})
     } catch (error) {
         next(error)
     }

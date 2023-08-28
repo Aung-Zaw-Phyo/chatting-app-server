@@ -1,7 +1,6 @@
 const ObjectId = require("mongoose").Types.ObjectId;
 exports.validateMongoId = (req, res, next) => {
     try {
-        console.log(req.params.id)
         if (!ObjectId.isValid(req.params.id)) {
             const error = new Error('Invalid Id')
             error.statusCode = 403

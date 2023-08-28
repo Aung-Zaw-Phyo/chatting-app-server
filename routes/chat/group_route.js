@@ -14,6 +14,9 @@ router.get('/:search', isAuth, group_controller.searchGroup )
 // get group's messages
 router.get('/messages/:id', validator.validateMongoId, isAuth, group_controller.getGroupMessages)
 
+// delete group's message
+router.delete('/message/:id', validator.validateMongoId, isAuth, group_controller.deleteMessage)
+
 // create group
 router.post('/create', isAuth, [
     body('group_name').trim().not().isEmpty().withMessage('Group name is required.'),
@@ -37,5 +40,7 @@ router.post('/search/member', isAuth, [
 ], group_controller.searchMember)
 
 router.delete('/delete/:id', isAuth, validator.validateMongoId, group_controller.deleteGroup)
+
+
 
 module.exports = router

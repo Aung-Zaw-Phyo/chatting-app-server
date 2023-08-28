@@ -214,3 +214,23 @@ exports.deleteGroup = async (req, res, next) => {
         next(error)
     }  
 }
+
+
+exports.deleteMessage = async (req, res, next) => {
+    try {
+        const userId = req.userId
+        const message_id = req.params.id;
+        const message = await GroupMessage.findOne({_id: message_id, user: userId})
+        if(!message) {
+            const error = new Error('Unauthorized')
+            error.statusCode = 403
+            throw error
+        }
+        message.deleteOne()
+        console.log(message.group.toString())
+        getIo().to(message.group.toString()).emit('delete-msg', {message: message, type: 'GROUP'})
+        res.status(200).json({status: true, message: 'Successfully deleted message', data: {message: message}})
+    } catch (error) {
+        next(error)
+    }
+}

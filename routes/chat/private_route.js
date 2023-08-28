@@ -10,6 +10,8 @@ router.get('/:id', validator.validateMongoId, isAuth, private_controller.getMess
 // create message
 router.post('/create/:id', validator.validateMongoId, isAuth, private_controller.createMessage)
 
+router.delete('/delete/:id', validator.validateMongoId, isAuth, private_controller.deleteMessage)
+
 
 
 module.exports = router
