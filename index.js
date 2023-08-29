@@ -13,7 +13,7 @@ const chat_group_route = require('./routes/chat/group_route')
 const chat_admin_route = require('./routes/chat/admin_route')
 
 const corsOptions = {
-    origin: ['http://localhost:3000', 'http://localhost:3001'], 
+    origin: ['http://localhost:3000', 'http://localhost:3001'],  // ['http://localhost:3000', 'http://localhost:3001']
     methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'HEAD', 'OPTIONS'],
     allowedHeaders: ['Content-Type', 'Origin', 'X-Requested-With', 'Accept', 'x-client-key', 'x-client-token', 'x-client-secret', 'Authorization'],
     credentials:true,            //access-control-allow-credentials:true
@@ -29,7 +29,7 @@ const uploadedFiles = express.static(path.join(__dirname, "uploads"));
 app.use("/uploads", uploadedFiles);
 
 app.get('/', (req, res, next) => {
-    res.send('Server is running on port: ', PORT)
+    res.status(200).send('Server is running on port: ' + PORT)
 })
 
 app.use('/chat', chat_auth_route)

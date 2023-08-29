@@ -31,9 +31,9 @@ exports.signup = async (req, res, next) => {
         let user = await User({name, email, password}).save()
 
         const token = jwt.sign({id: user.id, email: user.email}, 'chatroom 123!@#', { expiresIn: 24*60*60 })
-        res.cookie('jwt', token, {httpOnly: true, maxAge: 24*60*60*1000})
+        // res.cookie('jwt', token, {httpOnly: true, maxAge: 24*60*60*1000})
 
-        res.status(201).json({message: 'Successfully signed up.', data: {user}})
+        res.status(201).json({message: 'Successfully signed up.', data: {user, token}})
     } catch (error) {
         next(error)
     }
@@ -60,9 +60,9 @@ exports.login = async (req, res, next) => {
         let user = await User.login(email, password);
 
         const token = jwt.sign({id: user.id, email: user.email}, 'chatroom 123!@#', { expiresIn: 24*60*60 })
-        res.cookie('jwt', token, {httpOnly: true, maxAge: 24*60*60*1000})
+        // res.cookie('jwt', token, {httpOnly: true, maxAge: 24*60*60*1000})
 
-        res.status(201).json({message: 'Successfully signed up.', data: {user}})
+        res.status(201).json({message: 'Successfully signed in.', data: {user, token}})
     } catch (error) {
         next(error)
     }
@@ -168,7 +168,7 @@ exports.deleteAccount = async (req, res, next) => {
 
         await User.findByIdAndDelete(userId)
 
-        res.cookie('jwt', '', {maxAge: 1})
+        // res.cookie('jwt', '', {maxAge: 1})
         res.status(200).json({status: true, message: 'Successfully deleted account', data: null})
     } catch (error) {
         next(error)
