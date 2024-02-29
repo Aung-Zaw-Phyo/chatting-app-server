@@ -18,7 +18,6 @@ module.exports = (req, res, next) => {
         }
 
         jwt.verify(token, process.env.SECRET_KEY, async (err, decodedtoken) => {
-            console.log('decodedtoken result: ', decodedtoken)
             if (!decodedtoken) {
                 const error = new Error('Unauthenticated!')
                 error.statusCode = 401
@@ -27,6 +26,12 @@ module.exports = (req, res, next) => {
             if (err) {
                 console.log(err.message)
             } else {
+                if (decodedtoken.status !== 'admin') {
+                    // console.log('decodedtoken result: ', decodedtoken)
+                    const error = new Error('Unauthorized!')
+                    error.statusCode = 403
+                    next(error)
+                }
                 req.userId = decodedtoken.id
                 req.userEmail = decodedtoken.email
             }
@@ -36,32 +41,3 @@ module.exports = (req, res, next) => {
         next(error)
     }
 }
-
-// module.exports = (req, res,next) => {
-//     try {
-//         const token = req.cookies.jwt;
-//         if(!token) {
-//             const error = new Error('Unauthenticated!')
-//             error.statusCode = 401
-//             throw error
-//         }
-
-//         jwt.verify(token, process.env.SECRET_KEY,async (err, decodedtoken) => {
-//             // console.log('decodedtoken result: ', decodedtoken)
-//             if(!decodedtoken) {
-//                 const error = new Error('Unauthenticated!')
-//                 error.statusCode = 401
-//                 next(error)
-//             }   
-//             if(err) {
-//                 console.log(err.message)
-//             }else {
-//                 req.userId = decodedtoken.id
-//                 req.userEmail = decodedtoken.email
-//             }
-//         })
-//         next()
-//     } catch (error) {
-//         next(error)
-//     }
-// }

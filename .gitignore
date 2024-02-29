@@ -3,3 +3,5 @@
 
 /uploads/messages/
 /uploads/users/
+
+.env

@@ -38,8 +38,9 @@ exports.signup = async (req, res, next) => {
 
         const token = jwt.sign({
             id: user.id,
-            email: user.email
-        }, 'chatroom 123!@#', {
+            email: user.email,
+            status: user.status
+        }, process.env.SECRET_KEY, {
             expiresIn: 24 * 60 * 60
         })
         // res.cookie('jwt', token, {httpOnly: true, maxAge: 24*60*60*1000})
@@ -78,8 +79,9 @@ exports.login = async (req, res, next) => {
 
         const token = jwt.sign({
             id: user.id,
-            email: user.email
-        }, 'chatroom 123!@#', {
+            email: user.email,
+            status: user.status
+        }, process.env.SECRET_KEY, {
             expiresIn: 24 * 60 * 60
         })
         // res.cookie('jwt', token, {httpOnly: true, maxAge: 24*60*60*1000})

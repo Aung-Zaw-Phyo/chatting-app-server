@@ -1,4 +1,4 @@
-const mongoose = require('mongoose') 
+const mongoose = require('mongoose')
 const Schema = mongoose.Schema
 
 const messageSchema = new Schema({
@@ -20,19 +20,25 @@ const messageSchema = new Schema({
         ref: 'ChatUser',
         required: true
     }
-}, {timestamps: true})
+}, {
+    timestamps: true
+})
 
 
 function transformMessage(doc, ret, options) {
     ret.id = ret._id;
-    ret.image = ret.image ? 'http://localhost:5000' + ret.image : null
+    ret.image = ret.image ? `http://localhost:${process.env.PORT}` + ret.image : null
     delete ret._id;
     delete ret.__v;
     return ret;
 }
 
-messageSchema.set('toObject', { transform: transformMessage });
-messageSchema.set('toJSON', { transform: transformMessage });
+messageSchema.set('toObject', {
+    transform: transformMessage
+});
+messageSchema.set('toJSON', {
+    transform: transformMessage
+});
 
 const message = mongoose.model('ChatGroupMessage', messageSchema)
 

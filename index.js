@@ -5,7 +5,8 @@ const fileUpload = require('express-fileupload')
 const cors = require('cors')
 const path = require('path')
 const app = express()
-const PORT = 5000
+const dotenv = require('dotenv').config()
+const PORT = process.env.PORT
 
 const chat_auth_route = require('./routes/auth_route')
 const chat_private_route = require('./routes/private_route')
