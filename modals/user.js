@@ -26,7 +26,7 @@ const userSchema = new Schema({
     }
 })
 
-userSchema.pre('save', async function (next) {
+userSchema.pre('save', async function(next) {
     let user = this // old function, not es6
     if (user.isModified("password")) {
         user.password = await bcrypt.hash(user.password, 12)
@@ -34,7 +34,7 @@ userSchema.pre('save', async function (next) {
     next()
 })
 
-userSchema.statics.login = async function (email, password) {
+userSchema.statics.login = async function(email, password) {
     const user = await this.findOne({
         email
     })
@@ -77,6 +77,6 @@ userSchema.set('toJSON', {
     transform: transformUser
 });
 
-const user = mongoose.model('ChatUser', userSchema)
+const user = mongoose.model('User', userSchema)
 
 module.exports = user

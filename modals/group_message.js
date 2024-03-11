@@ -12,12 +12,12 @@ const messageSchema = new Schema({
     },
     group: {
         type: Schema.Types.ObjectId,
-        ref: 'ChatGroup',
+        ref: 'Group',
         required: true
     },
     user: {
         type: Schema.Types.ObjectId,
-        ref: 'ChatUser',
+        ref: 'User',
         required: true
     }
 }, {
@@ -40,6 +40,6 @@ messageSchema.set('toJSON', {
     transform: transformMessage
 });
 
-const message = mongoose.model('ChatGroupMessage', messageSchema)
+const message = mongoose.model('GroupMessage', messageSchema)
 
 module.exports = message

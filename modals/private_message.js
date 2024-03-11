@@ -12,12 +12,12 @@ const messageSchema = new Schema({
     },
     to: {
         type: Schema.Types.ObjectId,
-        ref: 'ChatUser',
+        ref: 'User',
         required: true
     },
     from: {
         type: Schema.Types.ObjectId,
-        ref: 'ChatUser',
+        ref: 'User',
         required: true
     }
 }, {
@@ -40,6 +40,6 @@ messageSchema.set('toJSON', {
     transform: transformMessage
 });
 
-const message = mongoose.model('ChatPrivateMessage', messageSchema)
+const message = mongoose.model('PrivateMessage', messageSchema)
 
 module.exports = message

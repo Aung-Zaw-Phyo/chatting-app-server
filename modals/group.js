@@ -1,4 +1,4 @@
-const mongoose = require('mongoose') 
+const mongoose = require('mongoose')
 const Schema = mongoose.Schema
 
 const groupSchema = new Schema({
@@ -9,19 +9,17 @@ const groupSchema = new Schema({
     description: {
         type: String,
         required: false
-    },  
+    },
     creator: {
         type: Schema.Types.ObjectId,
-        ref: 'ChatUser',
+        ref: 'User',
         required: true
     },
-    members: [
-        { 
-            type: Schema.Types.ObjectId, 
-            ref: "ChatUser" 
-        }
-    ]
-}, {timestamps: true})
+    members: [{
+        type: Schema.Types.ObjectId,
+        ref: "User"
+    }]
+}, { timestamps: true })
 
 
 function transformGroup(doc, ret, options) {
@@ -35,6 +33,6 @@ function transformGroup(doc, ret, options) {
 groupSchema.set('toObject', { transform: transformGroup });
 groupSchema.set('toJSON', { transform: transformGroup });
 
-const group = mongoose.model('ChatGroup', groupSchema)
+const group = mongoose.model('Group', groupSchema)
 
 module.exports = group
