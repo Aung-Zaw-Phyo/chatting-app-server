@@ -20,10 +20,17 @@ const userSchema = new Schema({
         required: true,
         default: 'user'
     },
+    isVerified: {
+        type: Boolean,
+        required: true,
+        default: false,
+    },
     password: {
         type: String,
         required: [true, 'Password is required.']
     }
+}, {
+    timestamps: true
 })
 
 userSchema.pre('save', async function(next) {

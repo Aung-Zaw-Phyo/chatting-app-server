@@ -8,9 +8,11 @@ const User = require('../modals/user')
 const Group = require('../modals/group')
 const GroupMessage = require('../modals/group_message')
 const PrivateMessage = require('../modals/private_message')
-const user = require("../modals/user")
+const { sendEmailVerificationLink } = require("../utils/mail")
+const { shuffledString, storeDataInCache, getDataFromCache } = require("../utils/helper")
+const mongoose = require("mongoose")
 
-exports.signup = async (req, res, next) => {
+exports.signup = async(req, res, next) => {
     try {
         const errors = validationResult(req)
         if (!errors.isEmpty()) {
@@ -30,26 +32,19 @@ exports.signup = async (req, res, next) => {
         const email = req.body.email
         const password = req.body.password
 
+        const generatedString = shuffledString(email)
+        storeDataInCache(generatedString, email)
+        sendEmailVerificationLink(email, generatedString)
         let user = await User({
             name,
             email,
             password
         }).save()
 
-        const token = jwt.sign({
-            id: user.id,
-            email: user.email,
-            status: user.status
-        }, process.env.SECRET_KEY, {
-            expiresIn: 24 * 60 * 60
-        })
-        // res.cookie('jwt', token, {httpOnly: true, maxAge: 24*60*60*1000})
-
         res.status(201).json({
             message: 'Successfully signed up.',
             data: {
-                user,
-                token
+                user
             }
         })
     } catch (error) {
@@ -57,7 +52,7 @@ exports.signup = async (req, res, next) => {
     }
 }
 
-exports.login = async (req, res, next) => {
+exports.login = async(req, res, next) => {
     try {
         const errors = validationResult(req)
         if (!errors.isEmpty()) {
@@ -76,15 +71,24 @@ exports.login = async (req, res, next) => {
         const password = req.body.password
 
         let user = await User.login(email, password);
+        if (!user.isVerified) {
+            const generatedString = shuffledString(email)
+            storeDataInCache(generatedString, email)
+            sendEmailVerificationLink(email, generatedString)
+            const error = new Error('Please verify your account!')
+            error.statusCode = 401
+            error.data = null
+            throw error
+        }
 
         const token = jwt.sign({
-            id: user.id,
-            email: user.email,
-            status: user.status
-        }, process.env.SECRET_KEY, {
-            expiresIn: 24 * 60 * 60
-        })
-        // res.cookie('jwt', token, {httpOnly: true, maxAge: 24*60*60*1000})
+                id: user.id,
+                email: user.email,
+                status: user.status,
+            }, process.env.SECRET_KEY, {
+                expiresIn: 24 * 60 * 60
+            })
+            // res.cookie('jwt', token, {httpOnly: true, maxAge: 24*60*60*1000})
 
         res.status(201).json({
             message: 'Successfully signed in.',
@@ -98,7 +102,65 @@ exports.login = async (req, res, next) => {
     }
 }
 
-exports.update = async (req, res, next) => {
+exports.checkAccount = async(req, res, next) => {
+    try {
+        const errors = validationResult(req)
+        if (!errors.isEmpty()) {
+            const errs = errors.array().map(err => {
+                return {
+                    name: err.path,
+                    message: err.msg
+                }
+            })
+            const error = new Error(errs[0].message)
+            error.statusCode = 404
+            error.data = errs
+            throw error
+        }
+        const email = req.body.email
+
+        let user = await User.findOne({ email });
+        res.status(200).json({
+            message: 'success',
+            data: {
+                user
+            }
+        })
+    } catch (error) {
+        next(error)
+    }
+}
+
+exports.sendEmail = async(req, res, next) => {
+    try {
+        const errors = validationResult(req)
+        if (!errors.isEmpty()) {
+            const errs = errors.array().map(err => {
+                return {
+                    name: err.path,
+                    message: err.msg
+                }
+            })
+            const error = new Error(errs[0].message)
+            error.statusCode = 422
+            error.data = errs
+            throw error
+        }
+        const email = req.body.email
+        const generatedString = shuffledString(email)
+        storeDataInCache(generatedString, email)
+        sendEmailVerificationLink(email, generatedString)
+        res.status(200).json({
+            message: 'success',
+            data: null
+        })
+
+    } catch (error) {
+        next(error)
+    }
+}
+
+exports.update = async(req, res, next) => {
     try {
         const errors = validationResult(req)
         if (!errors.isEmpty()) {
@@ -180,7 +242,7 @@ exports.update = async (req, res, next) => {
     }
 }
 
-exports.logout = async (req, res, next) => {
+exports.logout = async(req, res, next) => {
     res.cookie('jwt', '', {
         maxAge: 1
     })
@@ -189,7 +251,41 @@ exports.logout = async (req, res, next) => {
     })
 }
 
-exports.deleteAccount = async (req, res, next) => {
+exports.verifyAccount = async(req, res, next) => {
+    try {
+        const key = req.body.key
+        const email = getDataFromCache(key)
+        let user = await User.findOne({ email })
+        if (!user) {
+            const error = new Error('Your verification is expired or invalid. Please login!')
+            error.statusCode = 422
+            error.data = null
+            throw error
+        }
+        await User.findByIdAndUpdate(user._id, { isVerified: true })
+        const token = jwt.sign({
+            id: user.id,
+            email: user.email,
+            status: user.status,
+        }, process.env.SECRET_KEY, {
+            expiresIn: 24 * 60 * 60
+        })
+
+        res.status(200).json({
+            status: true,
+            message: 'Your account is verified successfully!',
+            data: {
+                user,
+                token
+            }
+        })
+    } catch (error) {
+        next(error)
+    }
+
+}
+
+exports.deleteAccount = async(req, res, next) => {
     try {
         const userId = req.userId
 
@@ -208,7 +304,7 @@ exports.deleteAccount = async (req, res, next) => {
         const groupsByCreator = await Group.find({
             creator: userId
         })
-        groupsByCreator.forEach(async (group) => {
+        groupsByCreator.forEach(async(group) => {
             await GroupMessage.deleteMany({
                 group: group.id
             })
@@ -220,7 +316,7 @@ exports.deleteAccount = async (req, res, next) => {
         const groupsByMember = await Group.find({
             members: userId
         })
-        groupsByMember.forEach(async (group) => {
+        groupsByMember.forEach(async(group) => {
             const updateMembers = group.members.filter(member => member !== userId)
             await Group.findByIdAndUpdate(group.id, {
                 members: updateMembers
@@ -240,20 +336,53 @@ exports.deleteAccount = async (req, res, next) => {
     }
 }
 
-exports.userList = async (req, res, next) => { // 'https://ui-avatars.com/api/?background=36404A&color=fff&name=' + ret.name
+exports.userList = async(req, res, next) => {
     try {
         const userId = req.userId
-        let users = await User.find();
+        const messageIds = (await PrivateMessage.aggregate([{
+                $match: {
+                    $or: [{
+                        to: new mongoose.Types.ObjectId(userId),
+                    }, {
+                        from: new mongoose.Types.ObjectId(userId)
+                    }]
+                },
+            },
+            {
+                $sort: {
+                    "createdAt": -1
+                }
+            },
+        ])).map(obj => [obj.to, obj.from]).flat();
+        const userIds = messageIds.filter(messageId => messageId != userId);
+
+        let users = await User.aggregate([
+            { $match: { _id: { $in: userIds } } },
+            {
+                $addFields: {
+                    __order: { $indexOfArray: [userIds, '$_id'] }
+                }
+            },
+            { $sort: { __order: 1 } },
+            { $unset: '__order' }
+        ]).then((docs) => {
+            return docs.map(doc => {
+                doc.id = doc._id;
+                doc.image = doc.image ? `http://localhost:${process.env.PORT}` + doc.image : 'https://ui-avatars.com/api/?background=36404A&color=fff&name=' + doc.name
+                delete doc._id;
+                delete doc.__v;
+                delete doc.password;
+                return doc;
+            });
+        });
+
         let user = await User.findOne({
             _id: userId
         })
         let groups = await Group.find({
-            $or: [{
-                creator: userId
-            }, {
-                members: userId
-            }]
+            members: userId
         }).populate(['creator', 'members'])
+
         res.status(201).json({
             status: true,
             message: 'Successfully fetched users.',
@@ -268,7 +397,7 @@ exports.userList = async (req, res, next) => { // 'https://ui-avatars.com/api/?b
     }
 }
 
-exports.searchUser = async (req, res, next) => {
+exports.searchUser = async(req, res, next) => {
     try {
         const search = req.params.search
         const users = await User.find({

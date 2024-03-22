@@ -29,14 +29,15 @@ app.use(express.json());
 const uploadedFiles = express.static(path.join(__dirname, "uploads"));
 app.use("/uploads", uploadedFiles);
 
-app.get('/', (req, res, next) => {
-    res.status(200).send('Server is running on port: ' + PORT)
+app.get('/', async(req, res, next) => {
+    res.status(200).send({ message: 'Server is running on: ' + PORT })
 })
 
 app.use('/chat', chat_auth_route)
 app.use('/chat/private', chat_private_route)
 app.use('/chat/group', chat_group_route)
 app.use('/chat/admin', chat_admin_route)
+
 
 
 

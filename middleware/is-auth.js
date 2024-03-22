@@ -1,7 +1,8 @@
 const jwt = require('jsonwebtoken')
+const User = require('../modals/user')
 
 
-module.exports = (req, res, next) => {
+module.exports = async(req, res, next) => {
     try {
 
         const authHeader = req.get('Authorization')
@@ -17,8 +18,7 @@ module.exports = (req, res, next) => {
             throw error
         }
 
-        jwt.verify(token, process.env.SECRET_KEY, async (err, decodedtoken) => {
-            console.log('decodedtoken result: ', decodedtoken)
+        jwt.verify(token, process.env.SECRET_KEY, async(err, decodedtoken) => {
             if (!decodedtoken) {
                 const error = new Error('Unauthenticated!')
                 error.statusCode = 401
@@ -29,6 +29,12 @@ module.exports = (req, res, next) => {
             } else {
                 req.userId = decodedtoken.id
                 req.userEmail = decodedtoken.email
+                const user = await User.findById(req.userId)
+                if (!user || !user.isVerified) {
+                    const error = new Error('Unauthenticated!')
+                    error.statusCode = 401
+                    next(error)
+                }
             }
         })
         next()

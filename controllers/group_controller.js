@@ -10,7 +10,7 @@ const {
 } = require('../socket')
 
 
-exports.getGroups = async (req, res, next) => {
+exports.getGroups = async(req, res, next) => {
     try {
         const userId = req.userId
         let groups = await Group.find({
@@ -32,11 +32,11 @@ exports.getGroups = async (req, res, next) => {
     }
 }
 
-exports.searchGroup = async (req, res, next) => {
+exports.searchGroup = async(req, res, next) => {
     try {
         const userId = req.userId
         const search = req.params.search
-        //$or: [{to: to_id, from: from_id}, {to: from_id, from: to_id}]
+            //$or: [{to: to_id, from: from_id}, {to: from_id, from: to_id}]
         const groups = await Group.find({
             "$or": [{
                     name: {
@@ -66,7 +66,7 @@ exports.searchGroup = async (req, res, next) => {
     }
 }
 
-exports.searchMember = async (req, res, next) => {
+exports.searchMember = async(req, res, next) => {
     try {
         const errors = validationResult(req)
         if (!errors.isEmpty()) {
@@ -94,7 +94,7 @@ exports.searchMember = async (req, res, next) => {
     }
 }
 
-exports.createGroup = async (req, res, next) => {
+exports.createGroup = async(req, res, next) => {
     try {
         const errors = validationResult(req)
         if (!errors.isEmpty()) {
@@ -115,8 +115,8 @@ exports.createGroup = async (req, res, next) => {
         const description = req.body.description;
         const members = req.body.members
 
-        if (members.length < 3 || members.length > 20) {
-            const error = new Error('Group must have at least 3 members or at most 20 members.')
+        if (members.length < 2 || members.length > 20) {
+            const error = new Error('Group must have at least 3 members (including you) or at most 20 members.')
             error.statusCode = 422
             error.data = null
             throw error
@@ -125,6 +125,7 @@ exports.createGroup = async (req, res, next) => {
         const memberArr = members.map(member => {
             return member.id
         })
+        memberArr.push(req.userId)
 
         const result = await Group({
             name: group_name,
@@ -147,7 +148,7 @@ exports.createGroup = async (req, res, next) => {
     }
 }
 
-exports.getGroupMessages = async (req, res, next) => {
+exports.getGroupMessages = async(req, res, next) => {
     try {
         const group_id = req.params.id
         const userId = req.userId
@@ -187,7 +188,7 @@ exports.getGroupMessages = async (req, res, next) => {
     }
 }
 
-exports.createGroupMessage = async (req, res, next) => {
+exports.createGroupMessage = async(req, res, next) => {
     try {
         const text = req.body.text
         if (text.trim() === '' && !req.files) {
@@ -248,14 +249,39 @@ exports.createGroupMessage = async (req, res, next) => {
     }
 }
 
-exports.deleteGroup = async (req, res, next) => {
+exports.leaveGroup = async(req, res, next) => {
+    try {
+        const group_id = req.params.id
+        const group = await Group.findById(group_id)
+        if (!group) {
+            const error = new Error('Group not found!')
+            error.statusCode = 404
+            throw error
+        }
+        const result = group.members.filter((member) => {
+            return member.toString() !== req.userId
+        })
+        await group.updateOne({
+            members: result
+        })
+
+        res.status(200).json({
+            status: true,
+            message: 'Successfully leaved group',
+            data: null
+        })
+    } catch (error) {
+        next(error)
+    }
+}
+
+exports.deleteGroup = async(req, res, next) => {
     try {
         const userId = req.userId
         const group_id = req.params.id
 
         const group = await Group.findById(group_id)
 
-        console.log(userId, group.creator)
         if (!group) {
             const error = new Error('Group not found!')
             error.statusCode = 404
@@ -283,8 +309,7 @@ exports.deleteGroup = async (req, res, next) => {
     }
 }
 
-
-exports.deleteMessage = async (req, res, next) => {
+exports.deleteMessage = async(req, res, next) => {
     try {
         const userId = req.userId
         const message_id = req.params.id;

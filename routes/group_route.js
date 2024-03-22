@@ -39,11 +39,16 @@ router.post('/search/member', isAuth, [
                 return Promise.reject('User not found.')
             }
             if (user) {
+                if (req.userId === user.id) {
+                    return Promise.reject('Please add another person.')
+                }
                 req.user = user
             }
         })
     }).normalizeEmail(),
 ], group_controller.searchMember)
+
+router.put('/leave/:id', isAuth, validator.validateMongoId, group_controller.leaveGroup)
 
 router.delete('/delete/:id', isAuth, validator.validateMongoId, group_controller.deleteGroup)
 
