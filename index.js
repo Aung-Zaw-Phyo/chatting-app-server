@@ -14,7 +14,7 @@ const chat_group_route = require('./routes/group_route')
 const chat_admin_route = require('./routes/admin_route')
 
 const corsOptions = {
-    origin: ['http://localhost:3000', 'https://chat-gamma-dun.vercel.app'], // ['http://localhost:3000', 'http://localhost:3001']
+    origin: ['http://localhost:3000', 'https://chat.aungzawphyo.com', 'https://chat-gamma-dun.vercel.app'],
     methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'HEAD', 'OPTIONS'],
     allowedHeaders: ['Content-Type', 'Origin', 'X-Requested-With', 'Accept', 'x-client-key', 'x-client-token', 'x-client-secret', 'Authorization'],
     credentials: true, //access-control-allow-credentials:true
