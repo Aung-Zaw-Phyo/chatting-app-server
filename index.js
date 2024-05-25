@@ -60,7 +60,7 @@ mongoose.connect('mongodb://127.0.0.1:27017/chat').then(result => {
         console.log('Server is running on port: ', PORT)
     })
 
-    const io = require('./socket')(server, {
+    const io = require('./socket').init(server, {
         cors: corsOptions
     })
     io.on('connection', socket => {
