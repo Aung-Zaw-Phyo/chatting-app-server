@@ -12,6 +12,7 @@ const chat_auth_route = require('./routes/auth_route')
 const chat_private_route = require('./routes/private_route')
 const chat_group_route = require('./routes/group_route')
 const chat_admin_route = require('./routes/admin_route')
+const { Server } = require('socket.io')
 
 const corsOptions = {
     origin: ['http://localhost:3000', 'https://chat.aungzawphyo.com', 'https://chat-gamma-dun.vercel.app'],
@@ -60,9 +61,12 @@ mongoose.connect('mongodb://127.0.0.1:27017/chat').then(result => {
         console.log('Server is running on port: ', PORT)
     })
 
-    const io = require('./socket').init(server, {
-        cors: corsOptions
+    const io = new Server(server, {
+        cors: "https://chat-gamma-dun.vercel.app"
     })
+    // const io = require('./socket').init(server, {
+    //     cors: corsOptions
+    // })
     io.on('connection', socket => {
         console.log('Client connected!')
         socket.on('join-room', (roomId) => {
