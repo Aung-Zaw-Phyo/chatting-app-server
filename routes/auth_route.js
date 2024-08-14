@@ -3,7 +3,7 @@ const router = express.Router()
 const {
     body
 } = require('express-validator')
-const User = require('../modals/user')
+const User = require('../models/user')
 const isAuth = require('../middleware/is-auth')
 
 const auth = require('../controllers/auth_controller')

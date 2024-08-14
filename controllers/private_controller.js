@@ -1,6 +1,6 @@
 const uuid = require('uuid')
-const PrivateMessage = require('../modals/private_message')
-const User = require('../modals/user')
+const PrivateMessage = require('../models/private_message')
+const User = require('../models/user')
 const {
     getIo
 } = require('../socket')

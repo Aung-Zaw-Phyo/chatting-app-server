@@ -2,9 +2,9 @@ const {
     validationResult
 } = require("express-validator")
 const uuid = require('uuid')
-const ChatUser = require('../modals/user')
-const Group = require('../modals/group')
-const GroupMessage = require('../modals/group_message')
+const ChatUser = require('../models/user')
+const Group = require('../models/group')
+const GroupMessage = require('../models/group_message')
 const {
     getIo
 } = require('../socket')

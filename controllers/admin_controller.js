@@ -1,7 +1,7 @@
-const User = require('../modals/user')
-const Group = require('../modals/group')
-const GroupMessage = require('../modals/group_message')
-const PrivateMessage = require('../modals/private_message')
+const User = require('../models/user')
+const Group = require('../models/group')
+const GroupMessage = require('../models/group_message')
+const PrivateMessage = require('../models/private_message')
 
 exports.getUsers = async (req, res, next) => {
     try {

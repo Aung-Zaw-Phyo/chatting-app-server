@@ -3,7 +3,7 @@ const router = express.Router()
 const {
     body
 } = require('express-validator')
-const ChatUser = require('../modals/user')
+const ChatUser = require('../models/user')
 const isAuth = require('../middleware/is-auth')
 const group_controller = require('../controllers/group_controller')
 const validator = require('../utils/validator')
