@@ -7,10 +7,11 @@ const path = require('path')
 const app = express()
 require('dotenv').config()
 
+// Routers
 const userRouter = require('./routes/user.routes')
 const privateMessageRouter = require('./routes/private-message.routes')
-const groupMessageRouter = require('./routes/group-message.routes')
 const adminRouter = require('./routes/admin.routes')
+const groupRouter = require('./routes/group.routes')
 
 const corsOptions = {
     origin: ['http://localhost:3000', 'https://chat.aungzawphyo.com', 'https://chat-gamma-dun.vercel.app'],
@@ -21,7 +22,6 @@ const corsOptions = {
 }
 
 app.use(cors(corsOptions))
-
 app.use(cookieParser())
 app.use(fileUpload());
 app.use(express.json());
@@ -34,7 +34,7 @@ app.get('/', async(req, res, next) => {
 
 app.use('/api/users', userRouter)
 app.use('/api/private-messages', privateMessageRouter)
-app.use('/api/group-messages', groupMessageRouter)
+app.use('/api/groups', groupRouter)
 app.use('/api/admins', adminRouter)
 
 app.use((error, req, res, next) => {
