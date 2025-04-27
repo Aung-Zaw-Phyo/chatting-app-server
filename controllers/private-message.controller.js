@@ -4,54 +4,49 @@ const User = require('../models/user.model')
 const {
     getIo
 } = require('../socket')
-const {
-    isValidObjectId
-} = require('mongoose')
+const ObjectId = require("mongoose").Types.ObjectId;
 
 exports.getMessages = async (req, res, next) => {
     try {
-        const to_id = req.params.id
-        const from_id = req.userId
-        const currentPage = req.query.page || 1
-        const perPage = 12
+        const receiverId = req.query.receiverId
+        const senderId = req.userId
+        if (!ObjectId.isValid(receiverId)) {
+            const error = new Error('Invalid Id')
+            error.statusCode = 403
+            throw error
+        }
 
         const totalItems = await PrivateMessage.find({
             $or: [{
-                to: to_id,
-                from: from_id
+                receiver: receiverId,
+                sender: senderId
             }, {
-                to: from_id,
-                from: to_id
+                receiver: senderId,
+                sender: receiverId
             }]
         }).countDocuments()
-        // const result = await PrivateMessage.find({ 
-        //     $or: [{to: to_id, from: from_id}, {to: from_id, from: to_id}]     
-        // }).sort({createdAt: -1}).skip((currentPage - 1) * perPage).limit(perPage).populate([
-        //     {path: 'to', select: '_id name email'}, 
-        //     {path: 'from', select: '_id name email'}
-        // ])
         const result = await PrivateMessage.find({
             $or: [{
-                to: to_id,
-                from: from_id
+                receiver: receiverId,
+                sender: senderId
             }, {
-                to: from_id,
-                from: to_id
+                receiver: senderId,
+                sender: receiverId
             }]
         }).sort({
             createdAt: -1
         }).populate([{
-                path: 'to',
+                path: 'receiver',
                 select: '_id name email'
             },
             {
-                path: 'from',
+                path: 'sender',
                 select: '_id name email'
             }
         ])
         const messages = result.reverse()
         const user = await User.findOne({
-            _id: to_id
+            _id: receiverId
         })
         if (!user) {
             const error = new Error('Chat not found!')
@@ -81,8 +76,13 @@ exports.createMessage = async (req, res, next) => {
             error.statusCode = 422
             throw error
         }
-        const to_id = req.params.id;
-        const from_id = req.userId
+        const receiverId = req.query.receiverId
+        const senderId = req.userId
+        if (!ObjectId.isValid(receiverId)) {
+            const error = new Error('Invalid Id')
+            error.statusCode = 403
+            throw error
+        }
         let image = null
         if (req.files && req.files.image) {
             const ext = req.files.image.name.split('.')[1]
@@ -98,8 +98,8 @@ exports.createMessage = async (req, res, next) => {
         const result = await PrivateMessage({
             text: text,
             image: image ? `/uploads/messages/${image}` : null,
-            to: to_id,
-            from: from_id
+            receiver: receiverId,
+            sender: senderId
         }).save()
 
         if (result) {
@@ -107,16 +107,16 @@ exports.createMessage = async (req, res, next) => {
         }
 
         const message = await PrivateMessage.findOne(result._id).populate([{
-                path: 'to',
+                path: 'receiver',
                 select: '_id name email'
             },
             {
-                path: 'from',
+                path: 'sender',
                 select: '_id name email'
             }
         ])
 
-        getIo().to(to_id).emit('receive-msg', {
+        getIo().to(receiverId).emit('receive-msg', {
             message: message,
             type: 'PRIVATE'
         })

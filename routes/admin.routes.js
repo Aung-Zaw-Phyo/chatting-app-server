@@ -5,10 +5,10 @@ const validator = require('../utils/validator')
 
 const adminRouter = express.Router()
 
-adminRouter.get('/users', isAdminMiddleware, adminController.getUsers)
+adminRouter.get('/', isAdminMiddleware, adminController.getUsers)
 
-adminRouter.get('/user/:id', validator.validateMongoId, isAdminMiddleware, adminController.userDetail)
+adminRouter.get('/:id', validator.validateMongoId, isAdminMiddleware, adminController.userDetail)
 
-adminRouter.delete('/user/:id', isAdminMiddleware, adminController.deleteAccount)
+adminRouter.delete('/:id', isAdminMiddleware, adminController.deleteAccount)
 
 module.exports = adminRouter

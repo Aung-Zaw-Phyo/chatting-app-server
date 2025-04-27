@@ -5,13 +5,11 @@ const privateMessageController = require('../controllers/private-message.control
 
 const privateMessageRouter = express.Router()
 
-// get messages
-privateMessageRouter.get('/:id', validator.validateMongoId, isAuthMiddleware, privateMessageController.getMessages)
+privateMessageRouter.get('/', isAuthMiddleware, privateMessageController.getMessages)
 
-// create message
-privateMessageRouter.post('/create/:id', validator.validateMongoId, isAuthMiddleware, privateMessageController.createMessage)
+privateMessageRouter.post('/', isAuthMiddleware, privateMessageController.createMessage)
 
-privateMessageRouter.delete('/delete/:id', validator.validateMongoId, isAuthMiddleware, privateMessageController.deleteMessage)
+privateMessageRouter.delete('/:id', validator.validateMongoId, isAuthMiddleware, privateMessageController.deleteMessage)
 
 
 

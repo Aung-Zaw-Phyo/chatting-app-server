@@ -32,10 +32,10 @@ app.get('/', async(req, res, next) => {
     res.status(200).send({ message: 'Server is running on: ' + PORT })
 })
 
-app.use('/chat', userRouter)
-app.use('/chat/private', privateMessageRouter)
-app.use('/chat/group', groupMessageRouter)
-app.use('/chat/admin', adminRouter)
+app.use('/api/users', userRouter)
+app.use('/api/private-messages', privateMessageRouter)
+app.use('/api/group-messages', groupMessageRouter)
+app.use('/api/admins', adminRouter)
 
 app.use((error, req, res, next) => {
     console.log(error)
@@ -51,7 +51,7 @@ app.use((error, req, res, next) => {
     })
 })
 
-mongoose.connect('mongodb://127.0.0.1:27017/chat').then(result => {
+mongoose.connect(process.env.DB_URI).then(result => {
     const server = app.listen(process.env.PORT, () => {
         console.log('Server is running on port: ', process.env.PORT)
     })

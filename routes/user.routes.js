@@ -82,9 +82,9 @@ userRouter.post('/logout', userController.logout)
 
 userRouter.post('/delete/account', isAuthMiddleware, userController.deleteAccount)
 
-userRouter.get('/users', isAuthMiddleware, userController.userList)
+userRouter.get('/', isAuthMiddleware, userController.userList)
 
-userRouter.get('/users/:search', isAuthMiddleware, userController.searchUser)
+userRouter.get('/:search', isAuthMiddleware, userController.searchUser)
 
 
 module.exports = userRouter
