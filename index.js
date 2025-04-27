@@ -5,14 +5,12 @@ const fileUpload = require('express-fileupload')
 const cors = require('cors')
 const path = require('path')
 const app = express()
-const dotenv = require('dotenv').config()
-const PORT = process.env.PORT
+require('dotenv').config()
 
-const chat_auth_route = require('./routes/auth_route')
-const chat_private_route = require('./routes/private_route')
-const chat_group_route = require('./routes/group_route')
-const chat_admin_route = require('./routes/admin_route')
-const { Server } = require('socket.io')
+const userRouter = require('./routes/user.routes')
+const privateMessageRouter = require('./routes/private-message.routes')
+const groupMessageRouter = require('./routes/group-message.routes')
+const adminRouter = require('./routes/admin.routes')
 
 const corsOptions = {
     origin: ['http://localhost:3000', 'https://chat.aungzawphyo.com', 'https://chat-gamma-dun.vercel.app'],
@@ -34,13 +32,10 @@ app.get('/', async(req, res, next) => {
     res.status(200).send({ message: 'Server is running on: ' + PORT })
 })
 
-app.use('/chat', chat_auth_route)
-app.use('/chat/private', chat_private_route)
-app.use('/chat/group', chat_group_route)
-app.use('/chat/admin', chat_admin_route)
-
-
-
+app.use('/chat', userRouter)
+app.use('/chat/private', privateMessageRouter)
+app.use('/chat/group', groupMessageRouter)
+app.use('/chat/admin', adminRouter)
 
 app.use((error, req, res, next) => {
     console.log(error)
@@ -57,8 +52,8 @@ app.use((error, req, res, next) => {
 })
 
 mongoose.connect('mongodb://127.0.0.1:27017/chat').then(result => {
-    const server = app.listen(PORT, () => {
-        console.log('Server is running on port: ', PORT)
+    const server = app.listen(process.env.PORT, () => {
+        console.log('Server is running on port: ', process.env.PORT)
     })
 
     const io = require('./socket').init(server, {
