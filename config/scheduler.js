@@ -14,4 +14,4 @@ const deleteInactiveUser = async () => {
         }
     }
 };
-cron.schedule("0 0 */3 * * *", deleteUnActiveUser) 
+cron.schedule("0 0 */3 * * *", deleteInactiveUser) 
