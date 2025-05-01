@@ -7,6 +7,9 @@ const path = require('path')
 const app = express()
 require('dotenv').config()
 
+// scheduler
+require("./config/scheduler")
+
 // Routers
 const userRouter = require('./routes/user.routes')
 const privateMessageRouter = require('./routes/private-message.routes')

@@ -21,6 +21,7 @@
     "jsonwebtoken": "^9.0.1",
     "mongoose": "^7.4.3",
     "node-cache": "^5.1.2",
+    "node-cron": "^3.0.3",
     "nodemailer": "^6.9.12",
     "nodemailer-sendgrid-transport": "^0.2.0",
     "server": "file:",
