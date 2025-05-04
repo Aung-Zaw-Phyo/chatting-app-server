@@ -1,9 +1,7 @@
 const uuid = require('uuid')
 const PrivateMessage = require('../models/private-message.model')
-const User = require('../models/user.model')
-const {
-    getIo
-} = require('../socket')
+const User = require('../models/user.model');
+const { emitMessage } = require('../services/socket.service');
 const ObjectId = require("mongoose").Types.ObjectId;
 
 exports.getMessages = async (req, res, next) => {
@@ -115,11 +113,7 @@ exports.createMessage = async (req, res, next) => {
                 select: '_id name email'
             }
         ])
-
-        getIo().to(receiverId).emit('receive-msg', {
-            message: message,
-            type: 'PRIVATE'
-        })
+        emitMessage(receiverId, 'receive-msg', message, 'PRIVATE')
         res.status(200).json({
             status: true,
             message: 'Successfully created message',
@@ -146,10 +140,7 @@ exports.deleteMessage = async (req, res, next) => {
             throw error
         }
         message.deleteOne()
-        getIo().to(message.to.toString()).emit('delete-msg', {
-            message: message,
-            type: 'PRIVATE'
-        })
+        emitMessage(message.to.toString(), 'delete-msg', message, 'PRIVATE')
         res.status(200).json({
             status: true,
             message: 'Successfully deleted message',

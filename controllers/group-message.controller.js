@@ -4,10 +4,7 @@ const {
 const uuid = require('uuid')
 const Group = require('../models/group.model')
 const GroupMessage = require('../models/group-message.model')
-const {
-    getIo
-} = require('../socket')
-
+const { emitMessage } = require("../services/socket.service")
 
 exports.getGroups = async(req, res, next) => {
     try {
@@ -232,14 +229,9 @@ exports.createGroupMessage = async(req, res, next) => {
                 return member.toString()
             }
         })
-        console.log(roomIds)
         for (const roomId of roomIds) {
-            getIo().to(roomId).emit('receive-msg', {
-                message: message,
-                type: 'GROUP'
-            })
+            emitMessage(roomId, 'receive-msg', message, 'GROUP')
         }
-        // getIo().to(groupId).emit('receive-msg', {message: message, type: 'GROUP'})
         res.status(200).json({
             status: true,
             message: 'Successfully created message',
@@ -328,10 +320,7 @@ exports.deleteMessage = async(req, res, next) => {
             throw error
         }
         message.deleteOne()
-        getIo().to(message.group.toString()).emit('delete-msg', {
-            message: message,
-            type: 'GROUP'
-        })
+        emitMessage(message.group.toString(), 'delete-msg', message, 'GROUP')
         res.status(200).json({
             status: true,
             message: 'Successfully deleted message',
