@@ -10,18 +10,11 @@ exports.getGroups = async(req, res, next) => {
     try {
         const userId = req.userId
         let groups = await Group.find({
-            $or: [{
-                creator: userId
-            }, {
-                members: userId
-            }]
+            $or: [{ creator: userId }, { members: userId }]
         }).populate(['creator', 'members'])
-
         res.status(201).json({
             message: 'Successfully fetched groups.',
-            data: {
-                groups: groups
-            }
+            data: { groups: groups }
         })
     } catch (error) {
         next(error)
@@ -34,17 +27,11 @@ exports.searchGroups = async(req, res, next) => {
         const search = req.params.search
         const groups = await Group.find({
             "$or": [{
-                    name: {
-                        $regex: search,
-                        $options: 'i'
-                    },
+                    name: { $regex: search, $options: 'i' },
                     creator: userId
                 },
                 {
-                    name: {
-                        $regex: search,
-                        $options: 'i'
-                    },
+                    name: { $regex: search, $options: 'i' },
                     members: userId
                 },
             ]
@@ -66,10 +53,7 @@ exports.searchMember = async(req, res, next) => {
         const errors = validationResult(req)
         if (!errors.isEmpty()) {
             const errs = errors.array().map(err => {
-                return {
-                    name: err.path,
-                    message: err.msg
-                }
+                return { name: err.path, message: err.msg }
             })
             const error = new Error(errs[0].message)
             error.statusCode = 422
@@ -80,9 +64,7 @@ exports.searchMember = async(req, res, next) => {
         res.status(200).json({
             status: true,
             message: 'Successfully fetched user',
-            data: {
-                user: user
-            }
+            data: { user: user }
         })
     } catch (error) {
         next(error)

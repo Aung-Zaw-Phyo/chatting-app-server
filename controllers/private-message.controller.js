@@ -14,39 +14,24 @@ exports.getMessages = async (req, res, next) => {
             throw error
         }
 
-        const totalItems = await PrivateMessage.find({
-            $or: [{
-                receiver: receiverId,
-                sender: senderId
-            }, {
-                receiver: senderId,
-                sender: receiverId
-            }]
-        }).countDocuments()
-        const result = await PrivateMessage.find({
-            $or: [{
-                receiver: receiverId,
-                sender: senderId
-            }, {
-                receiver: senderId,
-                sender: receiverId
-            }]
-        }).sort({
-            createdAt: -1
-        }).populate([{
-                path: 'receiver',
-                select: '_id name email'
-            },
-            {
-                path: 'sender',
-                select: '_id name email'
-            }
-        ])
-        const messages = result.reverse()
-        const user = await User.findOne({
-            _id: receiverId
-        })
-        if (!user) {
+        const query = {
+            $or: [
+                { receiver: receiverId, sender: senderId }, 
+                { receiver: senderId, sender: receiverId }
+            ]
+        }
+        const [messages, totalItems, receiver] = await Promise.all([
+            PrivateMessage.find(query).sort({
+                createdAt: -1
+            }).populate([
+                { path: 'receiver', select: '_id name email' },
+                { path: 'sender', select: '_id name email' }
+            ]),
+            PrivateMessage.find(query).countDocuments(),
+            User.findById(receiverId).select('_id name email')
+        ]);
+
+        if (!receiver) {
             const error = new Error('Chat not found!')
             error.statusCode = 404
             throw error
@@ -55,9 +40,9 @@ exports.getMessages = async (req, res, next) => {
             status: true,
             message: 'Successfully fetched messages',
             data: {
-                messages: messages,
+                messages: messages.reverse(),
                 totalItems: totalItems,
-                to_account: user,
+                to_account: receiver,
                 status: 'private'
             }
         })
@@ -104,14 +89,9 @@ exports.createMessage = async (req, res, next) => {
             image ? await req.files.image.mv(`./uploads/messages/${image}`) : null;
         }
 
-        const message = await PrivateMessage.findOne(result._id).populate([{
-                path: 'receiver',
-                select: '_id name email'
-            },
-            {
-                path: 'sender',
-                select: '_id name email'
-            }
+        const message = await PrivateMessage.findOne(result._id).populate([
+            { path: 'receiver', select: '_id name email' },
+            { path: 'sender', select: '_id name email' }
         ])
         emitMessage(receiverId, 'receive-msg', message, 'PRIVATE')
         res.status(200).json({
