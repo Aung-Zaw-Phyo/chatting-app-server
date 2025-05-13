@@ -14,8 +14,8 @@ const transport = nodemailer.createTransport({
 
 exports.sendEmailVerificationLink = (email, generatedString) => {
     const mailOptions = {
-        from: `"Chat" <${process.env.APP_USER}>`,
-        to: email,
+        sender: `"Chat" <${process.env.APP_USER}>`,
+        receiver: email,
         subject: 'Verification',
         text: 'Please verify your account, ' + process.env.FRONTEND_URL + 'verification/' + generatedString
     }

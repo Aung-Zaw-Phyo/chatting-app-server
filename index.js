@@ -32,7 +32,7 @@ const uploadedFiles = express.static(path.join(__dirname, "uploads"));
 app.use("/uploads", uploadedFiles);
 
 app.get('/', async(req, res, next) => {
-    res.status(200).send({ message: 'Server is running on: ' + PORT })
+    res.status(200).send({ message: 'Server is running on: ' + process.env.PORT })
 })
 
 app.use('/api/users', userRouter)

@@ -294,9 +294,9 @@ exports.deleteAccount = async(req, res, next) => {
         })
         await PrivateMessage.deleteMany({
             $or: [{
-                to: userId
+                receiver: userId
             }, {
-                from: userId
+                sender: userId
             }]
         })
 
@@ -342,9 +342,9 @@ exports.userList = async(req, res, next) => {
         const messageIds = (await PrivateMessage.aggregate([{
                 $match: {
                     $or: [{
-                        to: new mongoose.Types.ObjectId(userId),
+                        receiver: new mongoose.Types.ObjectId(userId),
                     }, {
-                        from: new mongoose.Types.ObjectId(userId)
+                        sender: new mongoose.Types.ObjectId(userId)
                     }]
                 },
             },
@@ -353,9 +353,9 @@ exports.userList = async(req, res, next) => {
                     "createdAt": -1
                 }
             },
-        ])).map(obj => [obj.to, obj.from]).flat();
+        ])).map(obj => [obj.receiver, obj.sender]).flat();
         const userIds = messageIds.filter(messageId => messageId != userId);
-
+        
         let users = await User.aggregate([
             { $match: { _id: { $in: userIds } } },
             {
@@ -375,7 +375,6 @@ exports.userList = async(req, res, next) => {
                 return doc;
             });
         });
-
         let user = await User.findOne({
             _id: userId
         })

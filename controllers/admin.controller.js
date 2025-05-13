@@ -28,7 +28,7 @@ exports.userDetail = async (req, res, next) => {
             user: id
         }).countDocuments()
         const private_messages = await PrivateMessage.find({
-            from: id
+            sender: id
         }).countDocuments()
         const user = await User.findById(id)
         res.status(200).json({
@@ -55,9 +55,9 @@ exports.deleteAccount = async (req, res, next) => {
         })
         await PrivateMessage.deleteMany({
             $or: [{
-                to: userId
+                receiver: userId
             }, {
-                from: userId
+                sender: userId
             }]
         })
 

@@ -112,7 +112,7 @@ exports.deleteMessage = async (req, res, next) => {
         const message_id = req.params.id;
         const message = await PrivateMessage.findOne({
             _id: message_id,
-            from: userId
+            sender: userId
         })
         if (!message) {
             const error = new Error('Unauthorized')
