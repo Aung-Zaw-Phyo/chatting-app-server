@@ -56,7 +56,7 @@ app.use((error, req, res, next) => {
 
 mongoose.connect(process.env.DB_URI).then(result => {
     const server = app.listen(process.env.PORT, () => {
-        console.log('Server is running: ', process.env.PORT)
+        console.log('Server is running.')
     })
 
     const io = require('./socket').init(server, {
