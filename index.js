@@ -17,10 +17,10 @@ const adminRouter = require('./routes/admin.routes')
 const groupRouter = require('./routes/group.routes')
 
 const corsOptions = {
-    origin: ['http://localhost:3000', 'https://chat.aungzawphyo.com', 'https://chat-gamma-dun.vercel.app'],
+    origin: ['http://localhost:3000', process.env.FRONTEND_URL],
     methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'HEAD', 'OPTIONS'],
     allowedHeaders: ['Content-Type', 'Origin', 'X-Requested-With', 'Accept', 'x-client-key', 'x-client-token', 'x-client-secret', 'Authorization'],
-    credentials: true, //access-control-allow-credentials:true
+    credentials: true, 
     optionSuccessStatus: 200,
 }
 
